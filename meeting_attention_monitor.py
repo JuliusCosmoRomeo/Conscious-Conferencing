@@ -8,7 +8,24 @@ import cv2
 from GazeTracking.gaze_tracking import GazeTracking
 
 gaze = GazeTracking()
+
+# settings
+
+"""
 video_path = "videos/zoom_fail.mp4"
+frame_width = 320
+frame_height = 200
+y_padding = 80
+frames_positions = [(0, 1), (0, 3), (2, 0), (2, 3)]
+"""
+
+video_path = "videos/checkout.mp4"
+frame_width = 960
+frame_height = 540
+y_padding = 0
+frames_positions = [(0, 0), (0, 1), (1, 0), (1, 1)]
+
+
 capture = cv2.VideoCapture(video_path)
 
 
@@ -43,14 +60,16 @@ webcam = cv2.VideoCapture(0)
 # if the horizontal ratio is below this value or above (1-threshold) the person is considered not attentive
 attention_zone_threshold = 0.3
 number_of_considered_frames = 200
-
+cv2.namedWindow("Demo", cv2.WND_PROP_FULLSCREEN)
+cv2.setWindowProperty("Demo",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
 
 while True:
     # We get a new frame from the capture
     _, frames = capture.read()
+
     _, webcam_frame = webcam.read()
     # percent by which the webcam image is resized
-    scale_percent = 50
+    scale_percent = 75
 
     # calculate the 50 percent of original dimensions
     width = int(webcam_frame.shape[1] * scale_percent / 100)
@@ -59,34 +78,36 @@ while True:
     # dsize
     dsize = (width, height)
 
-    frame_width = 320
-    frame_height = 200
-    y_padding = 80
-    frames_positions = [(0,1), (0,3), (2,0), (2,3)]
+
     x_absolute = 0
-    img = frames[y_padding: y_padding + frame_height + height, x_absolute: frame_width * len(frames_positions)]
+    #img = frames[y_padding: y_padding + frame_height + height, x_absolute: frame_width * len(frames_positions)]
+    img = frames
+
     for col, row in frames_positions:
         x_offset = row * frame_width
         y_offset = (col * frame_height) + y_padding
         frame = frames[y_offset: y_offset + frame_height, x_offset: x_offset+frame_width]
-
         # We send this frame to GazeTracking to analyze it
+
+
         frame = analyze_gaze(frame)
         horizontal_ratio = gaze.horizontal_ratio()
         if horizontal_ratio:
             if horizontal_ratio < attention_zone_threshold or horizontal_ratio > 1 - attention_zone_threshold:
                 blur_size = int(math.pow(abs(horizontal_ratio-attention_zone_threshold)*10, 2))
-
-            #frame = cv2.blur(frame, (blur_size,blur_size))
-        img[0: frame_height, x_absolute: x_absolute + frame_width] = frame
-        x_absolute += frame_width
-    img[frame_height:frame_height + height, 0: len(frames_positions)*frame_width] = (0,0,0)
+                frame = cv2.blur(frame, (blur_size,blur_size))
+        start_y = col * frame_height
+        start_x = row * frame_width
+        img[start_y: start_y + frame_height, start_x: start_x + frame_width] = frame
+        #x_absolute += frame_width
+    #img[frame_height:frame_height + height, 0: len(frames_positions)*frame_width] = (0,0,0)
     webcam_frame = analyze_gaze(webcam_frame)
 
 
     # resize image
     webcam_frame = cv2.resize(webcam_frame, dsize)
-    img[frame_height:frame_height+height, 0: +width] = webcam_frame
+    img[frame_height:frame_height+height, 0: width] = webcam_frame
+    #img = frames
     cv2.imshow("Demo", img)
 
     if cv2.waitKey(1) == 27:
