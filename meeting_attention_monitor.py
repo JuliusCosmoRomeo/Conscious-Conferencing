@@ -3,9 +3,11 @@ Demonstration of the GazeTracking library.
 Check the README.md for complete documentation.
 """
 import math
+import queue
 
 import cv2
 from GazeTracking.gaze_tracking import GazeTracking
+from Worker import Worker
 
 gaze = GazeTracking()
 
@@ -27,6 +29,30 @@ frames_positions = [(0, 0), (0, 1), (1, 0), (1, 1)]
 
 
 capture = cv2.VideoCapture(video_path)
+
+# create and start threads
+threads = []
+n_threads = 4
+
+fnos = list(range(0, 3000, 10))
+n_threads = 1 # n_threads is the number of worker threads to read video frame
+tasks = [[] for _ in range(0, n_threads)] # store frame number for each threads
+frame_per_thread = math.ceil(len(fnos) / n_threads)
+
+tid = 0
+for idx, fno in enumerate(fnos):
+	tasks[math.floor(idx / frame_per_thread)].append(fno)
+
+for _ in range(0, n_threads):
+	w = Worker()
+	threads.append(w)
+	w.start()
+
+results = queue.Queue(maxsize=100)
+on_done = lambda x: results.put(x)
+# distribute the tasks from main to worker threads
+for idx, w in enumerate(threads):
+	w.decode(video_path, tasks[idx], on_done)
 
 
 def analyze_gaze(frame):
@@ -50,22 +76,24 @@ def analyze_gaze(frame):
     return frame
 
 
+"""
 while not capture.isOpened():
     capture = cv2.VideoCapture(video_path)
     cv2.waitKey(1000)
     print("Wait for the header")
-
+"""
 webcam = cv2.VideoCapture(0)
 
 # if the horizontal ratio is below this value or above (1-threshold) the person is considered not attentive
 attention_zone_threshold = 0.3
 number_of_considered_frames = 200
 cv2.namedWindow("Demo", cv2.WND_PROP_FULLSCREEN)
-cv2.setWindowProperty("Demo",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+cv2.setWindowProperty("Demo", cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
 
 while True:
     # We get a new frame from the capture
-    _, frames = capture.read()
+    #_, frames = capture.read()
+    frames = results.get(timeout=5)
 
     _, webcam_frame = webcam.read()
     # percent by which the webcam image is resized
@@ -78,7 +106,6 @@ while True:
     # dsize
     dsize = (width, height)
 
-
     x_absolute = 0
     #img = frames[y_padding: y_padding + frame_height + height, x_absolute: frame_width * len(frames_positions)]
     img = frames
@@ -88,7 +115,6 @@ while True:
         y_offset = (col * frame_height) + y_padding
         frame = frames[y_offset: y_offset + frame_height, x_offset: x_offset+frame_width]
         # We send this frame to GazeTracking to analyze it
-
 
         frame = analyze_gaze(frame)
         horizontal_ratio = gaze.horizontal_ratio()
