@@ -2,6 +2,7 @@
 Demonstration of the GazeTracking library.
 Check the README.md for complete documentation.
 """
+import math
 
 import cv2
 from GazeTracking.gaze_tracking import GazeTracking
@@ -28,10 +29,7 @@ def analyze_gaze(frame):
 
     cv2.putText(frame, text, (90, 60), cv2.FONT_HERSHEY_DUPLEX, 1.6, (147, 58, 31), 2)
 
-    left_pupil = gaze.pupil_left_coords()
-    right_pupil = gaze.pupil_right_coords()
-    cv2.putText(frame, "Left pupil:  " + str(left_pupil), (90, 130), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
-    cv2.putText(frame, "Right pupil: " + str(right_pupil), (90, 165), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
+    cv2.putText(frame, str(gaze.horizontal_ratio()), (90, 100), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
     return frame
 
 
@@ -41,6 +39,10 @@ while not capture.isOpened():
     print("Wait for the header")
 
 webcam = cv2.VideoCapture(0)
+
+# if the horizontal ratio is below this value or above (1-threshold) the person is considered not attentive
+attention_zone_threshold = 0.3
+number_of_considered_frames = 200
 
 
 while True:
@@ -70,6 +72,12 @@ while True:
 
         # We send this frame to GazeTracking to analyze it
         frame = analyze_gaze(frame)
+        horizontal_ratio = gaze.horizontal_ratio()
+        if horizontal_ratio:
+            if horizontal_ratio < attention_zone_threshold or horizontal_ratio > 1 - attention_zone_threshold:
+                blur_size = int(math.pow(abs(horizontal_ratio-attention_zone_threshold)*10, 2))
+
+            #frame = cv2.blur(frame, (blur_size,blur_size))
         img[0: frame_height, x_absolute: x_absolute + frame_width] = frame
         x_absolute += frame_width
     img[frame_height:frame_height + height, 0: len(frames_positions)*frame_width] = (0,0,0)
