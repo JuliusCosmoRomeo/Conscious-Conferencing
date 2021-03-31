@@ -2,6 +2,8 @@
 
 ## Applying Attention Feedback in Video Conferencing to Increase Group Connectivity
 
+The goal of this project was to build a demonstration tool showing how collective attention feedback can enhance group connectivity in online meetings. 
+
 ### What this tool does
 
 ![image](https://user-images.githubusercontent.com/10089188/113192279-dac72f00-925e-11eb-91f8-3446e766237f.png)
