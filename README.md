@@ -3,6 +3,11 @@
 ## Applying Attention Feedback in Video Conferencing to Increase Group Connectivity
 
 The goal of this project was to build a demonstration tool showing how collective attention feedback can enhance group connectivity in online meetings. 
+To run the tool you'll need Python and Pip > 3.7 before running 
+`pip install -r requirements.txt` from the command line in the root folder of the repository.
+
+Then start the tool by running
+`python meeting_attention_monitor.py`.
 
 ### What this tool does
 
@@ -12,8 +17,10 @@ The goal of this project was to build a demonstration tool showing how collectiv
 
 ![image](https://user-images.githubusercontent.com/10089188/113192302-e0247980-925e-11eb-823f-cc9861cec3d5.png)
 
-This tool reflects group attentiveness in online meetings to all team members by analyzing gaze direction to infer attention. 
+This tool reflects group attentiveness in online meetings to all team members by analyzing gaze direction to infer attention. To analyze the gaze direction it builds upon [this gaze tracker](https://github.com/antoinelame/GazeTracking).
+
 In the current prototype the further a user looks away from the screen the lower their attention score and the lower the attention of a user the more their video tile will blur. 
+
 Additionally, if the aggregated distraction in the group is relatively high (e.g. one user is very distracted or multiple users aren’t attentive), not just their individual tiles will blur but also the screens of all other participants. 
 The hypothesis behind this approach is that this form of collective attention feedback would increase collective consciousness and encourage participants to stay attentive as this would impact the whole group’s communication.
 
