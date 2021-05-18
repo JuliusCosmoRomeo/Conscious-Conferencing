@@ -3,8 +3,8 @@
 ## Applying Attention Feedback in Video Conferencing to Increase Group Connectivity
 
 The goal of this project was to build a demonstration tool showing how collective attention feedback can enhance group connectivity in online meetings. 
-To run the tool you'll need Python and Pip > 3.7 before running 
-`pip install -r requirements.txt` from the command line in the root folder of the repository.
+To run the tool you'll need Python and Pip > 3.7 (tested on Python 3.7.6) before running 
+`pip install -r requirements.txt` from the command line in the GazeTracking folder. 
 
 Then start the tool by running
 `python meeting_attention_monitor.py`.
